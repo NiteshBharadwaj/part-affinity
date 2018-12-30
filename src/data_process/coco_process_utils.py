@@ -7,6 +7,10 @@ from .process_utils import DrawGaussian
 MIN_KEYPOINTS = 5
 MIN_AREA = 32 * 32
 
+# IMAGE NET CONSTANTS
+MEAN = [0.485, 0.456, 0.406],
+STD = [0.229, 0.224, 0.225]
+
 # Non traditional body parts
 BODY_PARTS = [
     (0,1),   # nose - left eye
@@ -27,12 +31,14 @@ BODY_PARTS = [
     (14,16)  # right knee - right foot
 ]
 
+FLIP_INDICES = [(1,2), (3,4), (5,6), (7,8), (9,10), (11,12), (13,14), (15,16)]
+
 
 def check_annot(annot):
     return annot['num_keypoints'] >= MIN_KEYPOINTS and annot['area'] > MIN_AREA and not annot['iscrowd'] == 1
 
 
-def get_heatmap(coco, img, keypoints):
+def get_heatmap(coco, img, keypoints, sigma):
     n_joints = keypoints.shape[1]
     out_map = np.zeros((n_joints + 1, img.shape[0], img.shape[1]))
     for person_id in range(keypoints.shape[0]):
@@ -41,11 +47,11 @@ def get_heatmap(coco, img, keypoints):
             keypoint = keypoints_person[i]
             # Ignore unannotated keypoints
             if keypoint[2] > 0:
-                out_map[i] = np.maximum(out_map[i], DrawGaussian(out_map[i], keypoint[0:2], sigma=7))
+                out_map[i] = np.maximum(out_map[i], DrawGaussian(out_map[i], keypoint[0:2], sigma=sigma))
     out_map[n_joints] = 1 - np.sum(out_map[0:n_joints], axis=0) # Last heatmap is background
     return out_map
 
-def get_paf(coco, img, keypoints, sigma_paf = 5):
+def get_paf(coco, img, keypoints, sigma_paf, variable_width):
     out_pafs = np.zeros((len(BODY_PARTS), 2, img.shape[0], img.shape[1]))
     n_person_part = np.zeros(len(BODY_PARTS))
     for person_id in range(keypoints.shape[0]):
@@ -58,18 +64,22 @@ def get_paf(coco, img, keypoints, sigma_paf = 5):
                 part_line_segment = keypoint_2 - keypoint_1
                 # Notation from paper
                 l = np.linalg.norm(part_line_segment)
-                v = part_line_segment/l
-                v_per = v[1], -v[0]
-                x, y = np.meshgrid(np.arange(img.shape[1]), np.arange(img.shape[0]))
-                dist_along_part = v[0] * (x - keypoint_1[0]) + v[1] * (y - keypoint_1[1])
-                dist_per_part = np.abs(v_per[0] * (x - keypoint_1[0]) + v_per[1] * (y - keypoint_1[1]))
-                mask1 = dist_along_part >= 0
-                mask2 = dist_along_part <= l
-                mask3 = dist_per_part <= sigma_paf
-                mask = mask1 & mask2 & mask3
-                out_pafs[i, 0] = out_pafs[i, 0] + mask.astype('float32') * v[0]
-                out_pafs[i, 1] = out_pafs[i, 1] + mask.astype('float32') * v[1]
-                n_person_part[i] += 1
+                if l>1e-2:
+                    sigma = sigma_paf
+                    if variable_width:
+                        sigma = sigma_paf *  l * 0.025
+                    v = part_line_segment/l
+                    v_per = v[1], -v[0]
+                    x, y = np.meshgrid(np.arange(img.shape[1]), np.arange(img.shape[0]))
+                    dist_along_part = v[0] * (x - keypoint_1[0]) + v[1] * (y - keypoint_1[1])
+                    dist_per_part = np.abs(v_per[0] * (x - keypoint_1[0]) + v_per[1] * (y - keypoint_1[1]))
+                    mask1 = dist_along_part >= 0
+                    mask2 = dist_along_part <= l
+                    mask3 = dist_per_part <= sigma
+                    mask = mask1 & mask2 & mask3
+                    out_pafs[i, 0] = out_pafs[i, 0] + mask.astype('float32') * v[0]
+                    out_pafs[i, 1] = out_pafs[i, 1] + mask.astype('float32') * v[1]
+                    n_person_part[i] += 1
     n_person_part = n_person_part.reshape(out_pafs.shape[0], 1, 1, 1)
     out_pafs = out_pafs/(n_person_part + 1e-8)
     return out_pafs
@@ -92,9 +102,10 @@ def get_ignore_mask(coco, img, annots):
     for i in range(len(annots)):
         annot = annots[i]
         mask = masks[i]
-        if annot['iscrowd'] == 1:
+        if not check_annot(annot):
             ignore_mask = ignore_mask | (mask & ~mask_union)
-    return ignore_mask
+
+    return ignore_mask.astype('uint8')
 
 
 def clean_annot(coco, data_path, split):

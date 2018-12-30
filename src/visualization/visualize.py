@@ -54,10 +54,10 @@ def visualize_keypoints(img, keypoints, body_part_map):
 
 def visualize_paf(img, pafs):
     img = img.copy()
-    # paf = (pafs[:,0,:,:] > 1e-8).astype('bool') | (pafs[:,0,:,:] < -1e-8).astype('bool')
-    # paf = (paf.max(axis=0)*255).astype('uint8')
-    paf = (pafs[:,0,:,:].sum(axis=0)*255).astype('uint8')
+    paf = (pafs[:,0,:,:] > 1e-8).astype('bool') | (pafs[:,0,:,:] < -1e-8).astype('bool')
+    paf = (paf.max(axis=0)*255).astype('uint8')
+    #paf = (pafs[:,:,:].sum(axis=0)*255).astype('uint8')
     colored = cv2.applyColorMap(paf, cv2.COLORMAP_JET)
-    img = cv2.addWeighted(img, 0.8, colored, 0.2, 0)
+    img = cv2.addWeighted(img, 0.6, colored, 0.4, 0)
     cv2.imshow('pafs', img)
     cv2.waitKey()
