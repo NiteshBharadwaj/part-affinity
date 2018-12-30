@@ -12,10 +12,10 @@ The data loader depends on pycocoapi which can be installed using
 
 ```pip install pycocotools```
 
-Design choices at this stage are i) Width of part affinity field ii) Heatmap width iii) Choosing the parts for PAF etc. iv) PAF magnitude (smooth/rigid) v) Handling occluded joints. Due to differences in scale of the persons across dataset, these choices play an important role during training. Original paper uses constant PAF with a single part width for all joints across dataset. But this can introduce a lot of noise to the data. Alternate design choices are exposed in this implementation while keeping the original choices as default.
+Design choices at this stage are i) Width of part affinity field ii) Heatmap width iii) Choosing the parts for PAF iv) PAF magnitude (smooth/rigid) v) Handling crowded/unannotated joints. Due to differences in scale of the persons across dataset, these choices play an important role during training. Original paper uses constant PAF with a single part width for all joints across dataset. But this can introduce a lot of noise to the data. Alternate design choices are exposed in this implementation while keeping the original choices as default.
 
 ## NN Model:
-Original paper uses VGG-19 with first few layers fixed and an intermediate training. Stacked hourglass and Resnet area also  explored in this implementation.
+Original paper uses VGG-19 with first few layers fixed and an intermediate training. Stacked hourglass and Resnet 50 are also explored in this implementation.
 
 ## Training:
 
