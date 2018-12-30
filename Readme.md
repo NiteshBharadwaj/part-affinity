@@ -15,7 +15,7 @@ The data loader depends on pycocoapi which can be installed using
 Design choices at this stage are i) Width of part affinity field ii) Heatmap std. iii) Choosing the parts for PAF iv) PAF magnitude (smooth/rigid) v) Handling crowded/unannotated joints. Due to differences in scale of the persons across dataset, these choices play an important role during training. Original paper uses constant PAF with a single part width for all joints across dataset. But this can introduce a lot of noise to the data. Alternate design choices are exposed in this implementation while keeping the original choices as default.
 
 ## NN Model:
-Original paper uses first 10 layers from VGG-19 as feature extractor followed by 7 heatmap/paf regression stages with intermediate supervision at each stage. Stacked hourglass and Resnet 50 are also explored in this implementation to replace VGG19. Model can be switched using ```-model``` hook.
+The paper uses first 10 layers from VGG-19 as feature extractor followed by 7 heatmap/paf regression stages with intermediate supervision at each stage. The same is implemented here.
 
 ## Training and Testing:
 
