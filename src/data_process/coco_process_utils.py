@@ -7,10 +7,6 @@ from .process_utils import DrawGaussian
 MIN_KEYPOINTS = 5
 MIN_AREA = 32 * 32
 
-# IMAGE NET CONSTANTS
-MEAN = [0.485, 0.456, 0.406],
-STD = [0.229, 0.224, 0.225]
-
 # Non traditional body parts
 BODY_PARTS = [
     (0,1),   # nose - left eye

@@ -5,9 +5,8 @@ import torch.utils.data as data
 from pycocotools.coco import COCO
 import numpy as np
 
-from .coco_process_utils import clean_annot, get_ignore_mask, get_heatmap, get_paf, get_keypoints, FLIP_INDICES, MEAN, \
-    STD
-from .process_utils import flip, resize, color_augment, resize_hm
+from .coco_process_utils import clean_annot, get_ignore_mask, get_heatmap, get_paf, get_keypoints, FLIP_INDICES
+from .process_utils import flip, resize, color_augment, resize_hm_paf, normalize, affine_augment
 
 
 class CocoDataSet(data.Dataset):
@@ -17,7 +16,7 @@ class CocoDataSet(data.Dataset):
             os.path.join(data_path, 'annotations/person_keypoints_{}{}.json'.format(split, self.coco_year)))
         self.split = split
         self.data_path = data_path
-        self.do_augment = split == 'train'
+        self.do_augment = True
 
         # load annotations that meet specific standards
         self.indices = clean_annot(self.coco, data_path, split)
@@ -45,26 +44,16 @@ class CocoDataSet(data.Dataset):
         if np.random.random() < opts.flipAugProb:
             img, ignore_mask, keypoints = flip(img, ignore_mask, keypoints, FLIP_INDICES)
         img, ignore_mask, keypoints = color_augment(img, ignore_mask, keypoints, opts.colorAugFactor)
-        # TODO: Affine augment
+        rot_angle = 0
+        if np.random.random() < opts.rotAugProb:
+            rot_angle = np.clip(np.random.randn(),-2.0,2.0) * opts.rotAugFactor
+        img, ignore_mask, keypoints = affine_augment(img, ignore_mask, keypoints, rot_angle, opts.scaleAugFactor)
         return img, ignore_mask, keypoints
-
-
-    def normalize(self, img):
-        img = img[:, :, ::-1]
-        img = (img - MEAN) / STD
-        img = img.transpose(2, 0, 1)
-        return img
-
-    def denormalize(self, img):
-        img = img.transpose(1, 2, 0)
-        img = img * STD + MEAN
-        img = img[:, :, ::-1]
-        return img
 
     def __getitem__(self, index):
         img, heat_map, paf, ignore_mask, _ = self.get_item_raw(index)
-        img = self.normalize(img)
-        heat_map, paf, ignore_mask = resize_hm(heat_map, paf, ignore_mask, self.opt.hmSize)
+        img = normalize(img)
+        heat_map, paf, ignore_mask = resize_hm_paf(heat_map, paf, ignore_mask, self.opt.hmSize)
         return img, heat_map, paf, ignore_mask, index
 
     def load_image(self, img_path):

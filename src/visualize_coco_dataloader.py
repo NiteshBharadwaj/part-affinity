@@ -10,7 +10,6 @@ if __name__ == '__main__':
         for i in range(len(coco_dataset)):
             img, heatmaps, paf, ignore_mask, keypoints = coco_dataset.get_item_raw(i)
             img = (img * 255.).astype('uint8')
-            heatmaps = (heatmaps * 255.).astype('uint8')
             visualize_keypoints(img, keypoints, BODY_PARTS)
             if opts.vizIgnoreMask:
                 visualize_masks(img, ignore_mask)

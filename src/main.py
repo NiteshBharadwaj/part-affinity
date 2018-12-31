@@ -34,13 +34,15 @@ def main():
     drop_lr = opt.dropLR
     val_interval = opt.valInterval
     learn_rate = opt.LR
+    visualize_out = opt.vizOut
 
     # train/ test
     if to_train:
         train_net(train_loader, test_loader, model, criterion_hm, criterion_paf, optimizer, n_epochs,
-                  val_interval, learn_rate,  drop_lr, opt.saveDir)
+                  val_interval, learn_rate, drop_lr, opt.saveDir, visualize_out)
     else:
-        test_net(test_loader, model, criterion_hm, criterion_paf)
+        test_net(test_loader, model, criterion_hm, criterion_paf, viz_output=visualize_out)
+
 
 if __name__ == '__main__':
     main()

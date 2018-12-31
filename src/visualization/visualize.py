@@ -1,5 +1,6 @@
 import numpy as np
 import cv2
+from data_process.process_utils import denormalize, resize_hm
 
 
 def apply_mask(image, mask, color, alpha=0.5):
@@ -23,10 +24,13 @@ def visualize_masks(img, ignore_mask):
         cv2.waitKey()
 
 
-def visualize_heatmap(img, heat_maps):
-    colored = cv2.applyColorMap(heat_maps.max(axis=0), cv2.COLORMAP_JET)
+def visualize_heatmap(img, heat_maps, displayname = 'heatmaps'):
+    heat_maps = heat_maps.max(axis=0)
+    heat_maps = (heat_maps/heat_maps.max() * 255.).astype('uint8')
+    img = img.copy()
+    colored = cv2.applyColorMap(heat_maps, cv2.COLORMAP_JET)
     img = cv2.addWeighted(img, 0.6, colored, 0.4, 0)
-    cv2.imshow('heatmaps', img)
+    cv2.imshow(displayname, img)
     cv2.waitKey()
 
 
@@ -61,3 +65,24 @@ def visualize_paf(img, pafs):
     img = cv2.addWeighted(img, 0.6, colored, 0.4, 0)
     cv2.imshow('pafs', img)
     cv2.waitKey()
+
+
+def visualize_output(input_, heatmaps_t, pafs_t, ignore_masks_t, outputs):
+    input_ = input_.numpy()
+    heatmaps_t = heatmaps_t.numpy()
+    pafs_t = pafs_t.numpy()
+    ignore_masks_t = ignore_masks_t.numpy()
+    n_images = input_.shape[0]
+    for i in range(n_images):
+        img = input_[i].copy()
+        img = (denormalize(img)*255).astype('uint8')
+        heatmap_o = resize_hm(outputs[0][i].copy(), img.shape[0])
+        paf_o = resize_hm(outputs[1][i].copy(), img.shape[0])
+        heatmap_t = resize_hm(heatmaps_t[i].copy(), img.shape[0])
+        paf_t = resize_hm(pafs_t[i].copy(), img.shape[0])
+        ignore_mask = cv2.resize(ignore_masks_t[i].copy(), (img.shape[0], img.shape[1]))
+        visualize_heatmap(img, heatmap_o[0:1], 'heatmap_out')
+        visualize_heatmap(img, heatmap_t[0:1], 'heatmap_target')
+        visualize_heatmap(img, paf_o[0:1], 'paf_out')
+        visualize_heatmap(img, paf_t[0:1], 'paf_target')
+        visualize_masks(img, ignore_mask)

@@ -11,7 +11,7 @@ class Opts:
         self.parser.add_argument('-nThreads', default=4, type=int, help='Number of threads')
         self.parser.add_argument('-expDir', default='../exp', help='Experiments directory')
         self.parser.add_argument('-scaleAugFactor', default=0.25, type=float, help='Scale augment factor')
-        self.parser.add_argument('-rotAugProb', default=0.6, type=float, help='Rotation augment probability')
+        self.parser.add_argument('-rotAugProb', default=0.4, type=float, help='Rotation augment probability')
         self.parser.add_argument('-flipAugProb', default=0.5, type=float, help='Flip augment probability')
         self.parser.add_argument('-rotAugFactor', default=30, type=float, help='Rotation augment factor')
         self.parser.add_argument('-colorAugFactor', default=0.2, type=float, help='Colo augment factor')
@@ -30,8 +30,9 @@ class Opts:
         self.parser.add_argument('-valInterval', type=int, default=1, help='Val Interval')
         self.parser.add_argument('-loadModel', default='none', help='Load pre-trained')
         self.parser.add_argument('-train', dest='train', action='store_true', help='Train')
-        self.parser.add_argument('-criterionHm', default='l1', help='Heatmap Criterion')
-        self.parser.add_argument('-criterionPaf', default='l1', help='PAF Criterion')
+        self.parser.add_argument('-vizOut', dest='vizOut', action='store_true', help='Visualize output?')
+        self.parser.add_argument('-criterionHm', default='mse', help='Heatmap Criterion')
+        self.parser.add_argument('-criterionPaf', default='mse', help='PAF Criterion')
 
     def parse(self):
         self.init()
