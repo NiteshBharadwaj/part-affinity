@@ -23,4 +23,5 @@ The paper uses first 10 layers from VGG-19 as feature extractor followed by 7 he
 
 Comprehensive list of opts can be found in ```opts/``` folder. To debug/visualize each image's outputs during training ```-vizOut``` flag is helpful. 50k iterations takes around 11.5 hours with a batch size of 8 on a GTX 1080 GPU 
 
+Sample nose heatmap outputs and nose-eye paf ouput is below after 10 epochs of training:
 ![Sample Output](output/sample_heatmap.png?raw=true "Sample heatmap outpus")
