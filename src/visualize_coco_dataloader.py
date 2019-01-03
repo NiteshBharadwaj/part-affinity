@@ -5,7 +5,7 @@ from data_process.coco_process_utils import BODY_PARTS
 
 if __name__ == '__main__':
     opts = VizOpts().parse()
-    for split in ['train', 'val']:
+    for split in ['val', 'train']:
         coco_dataset = CocoDataSet(opts.data, opts, split)
         for i in range(len(coco_dataset)):
             img, heatmaps, paf, ignore_mask, keypoints = coco_dataset.get_item_raw(i)

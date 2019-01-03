@@ -16,7 +16,7 @@ class CocoDataSet(data.Dataset):
             os.path.join(data_path, 'annotations/person_keypoints_{}{}.json'.format(split, self.coco_year)))
         self.split = split
         self.data_path = data_path
-        self.do_augment = True
+        self.do_augment = split == 'train'
 
         # load annotations that meet specific standards
         self.indices = clean_annot(self.coco, data_path, split)
@@ -24,7 +24,7 @@ class CocoDataSet(data.Dataset):
         self.opt = opt
         print('Loaded {} images for {}'.format(len(self.indices), split))
 
-    def get_item_raw(self, index):
+    def get_item_raw(self, index, to_resize = True):
         index = self.indices[index]
         anno_ids = self.coco.getAnnIds(index)
         annots = self.coco.loadAnns(anno_ids)
@@ -34,7 +34,8 @@ class CocoDataSet(data.Dataset):
         keypoints = get_keypoints(self.coco, img, annots)
         if self.do_augment:
             img, ignore_mask, keypoints = self.augment(img, ignore_mask, keypoints, self.opt)
-        img, ignore_mask, keypoints = resize(img, ignore_mask, keypoints, self.opt.imgSize)
+        if to_resize:
+            img, ignore_mask, keypoints = resize(img, ignore_mask, keypoints, self.opt.imgSize)
         heat_map = get_heatmap(self.coco, img, keypoints, self.opt.sigmaHM)
         paf = get_paf(self.coco, img, keypoints, self.opt.sigmaPAF, self.opt.variableWidthPAF)
 
@@ -61,6 +62,22 @@ class CocoDataSet(data.Dataset):
         img = img.astype('float32') / 255.
         return img
 
+    def get_imgs_multiscale(self, index, scales, flip = False):
+        img, heat_map, paf, ignore_mask,_ = self.get_item_raw(index, False)
+        imgs = []
+        for scale in scales:
+            width, height = img.shape[1], img.shape[0]
+            new_width, new_height = int(scale* width), int(scale*height)
+            scaled_img = cv2.resize(img.copy(), (new_width, new_height))
+            flip_img = cv2.flip(scaled_img, 1)
+            scaled_img = normalize(scaled_img)
+            imgs.append(scaled_img)
+            if flip:
+                imgs.append(normalize(flip_img))
+        paf = paf.transpose(2, 3, 0, 1)
+        paf = paf.reshape(paf.shape[0], paf.shape[1], paf.shape[2] * paf.shape[3])
+        paf = paf.transpose(2, 0, 1)
+        return imgs, heat_map, paf, ignore_mask
 
     def __len__(self):
         return len(self.indices)

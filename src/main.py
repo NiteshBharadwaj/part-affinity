@@ -4,7 +4,7 @@ import random
 from opts.base_opts import Opts
 from data_process.data_loader_provider import create_data_loaders
 from model.model_provider import create_model, create_optimizer
-from training.train_net import train_net, test_net
+from training.train_net import train_net, validate_net
 
 
 def main():
@@ -41,7 +41,7 @@ def main():
         train_net(train_loader, test_loader, model, criterion_hm, criterion_paf, optimizer, n_epochs,
                   val_interval, learn_rate, drop_lr, opt.saveDir, visualize_out)
     else:
-        test_net(test_loader, model, criterion_hm, criterion_paf, viz_output=visualize_out)
+        validate_net(test_loader, model, criterion_hm, criterion_paf, viz_output=visualize_out)
 
 
 if __name__ == '__main__':

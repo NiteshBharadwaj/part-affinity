@@ -23,5 +23,12 @@ The paper uses first 10 layers from VGG-19 as feature extractor followed by 7 he
 
 Comprehensive list of opts can be found in ```opts/``` folder. To debug/visualize each image's outputs during training ```-vizOut``` flag is helpful. 50k iterations takes around 11.5 hours with a batch size of 8 on a GTX 1080 GPU 
 
-Sample nose heatmap outputs and nose-eye paf ouput is below after 10 epochs of training:
+Sample nose heatmap outputs and nose-eye paf ouput is below after 20 epochs of training:
 ![Sample Output](output/sample_heatmap.png?raw=true "Sample heatmap outpus")
+
+## Evaluation:
+Evaluation is performed at multple scales and the average heatmap and paf are used for decoding pose. The evaluation pipeline is used from [here](https://github.com/tensorboy/pytorch_Realtime_Multi-Person_Pose_Estimation/blob/master/evaluate/coco_eval.py).
+
+```python python eval.py -data ../data -expID vgg19 -loadModel ../exp/vgg19/model_20.pth```
+
+![Sample Output](output/sample_output.png?raw=true "Sample outpus")

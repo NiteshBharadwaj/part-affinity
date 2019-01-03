@@ -59,7 +59,7 @@ def visualize_keypoints(img, keypoints, body_part_map):
 def visualize_paf(img, pafs):
     img = img.copy()
     paf = (pafs[:,0,:,:] > 1e-8).astype('bool') | (pafs[:,0,:,:] < -1e-8).astype('bool')
-    paf = (paf.max(axis=0)*255).astype('uint8')
+    paf = (np.abs(paf).max(axis=0)*255).astype('uint8')
     #paf = (pafs[:,:,:].sum(axis=0)*255).astype('uint8')
     colored = cv2.applyColorMap(paf, cv2.COLORMAP_JET)
     img = cv2.addWeighted(img, 0.6, colored, 0.4, 0)
@@ -67,22 +67,27 @@ def visualize_paf(img, pafs):
     cv2.waitKey()
 
 
+def visualize_output_single(img, heatmap_t, paf_t, ignore_mask_t, heatmap_o, paf_o):
+    img = (denormalize(img) * 255).astype('uint8')
+    heatmap_o = resize_hm(heatmap_o, (img.shape[1], img.shape[0]))
+    paf_o = resize_hm(paf_o, (img.shape[1], img.shape[0]))
+    heatmap_t = resize_hm(heatmap_t, (img.shape[1], img.shape[0]))
+    paf_t = resize_hm(paf_t, (img.shape[1], img.shape[0]))
+    ignore_mask = cv2.resize(ignore_mask_t, (img.shape[1], img.shape[0]))
+    visualize_heatmap(img, heatmap_o, 'heatmap_out')
+    visualize_heatmap(img, heatmap_t, 'heatmap_target')
+    visualize_heatmap(img, paf_o, 'paf_out')
+    visualize_heatmap(img, paf_t, 'paf_target')
+    visualize_masks(img, ignore_mask)
+
+
 def visualize_output(input_, heatmaps_t, pafs_t, ignore_masks_t, outputs):
-    input_ = input_.numpy()
-    heatmaps_t = heatmaps_t.numpy()
-    pafs_t = pafs_t.numpy()
-    ignore_masks_t = ignore_masks_t.numpy()
     n_images = input_.shape[0]
     for i in range(n_images):
         img = input_[i].copy()
-        img = (denormalize(img)*255).astype('uint8')
-        heatmap_o = resize_hm(outputs[0][i].copy(), img.shape[0])
-        paf_o = resize_hm(outputs[1][i].copy(), img.shape[0])
-        heatmap_t = resize_hm(heatmaps_t[i].copy(), img.shape[0])
-        paf_t = resize_hm(pafs_t[i].copy(), img.shape[0])
-        ignore_mask = cv2.resize(ignore_masks_t[i].copy(), (img.shape[0], img.shape[1]))
-        visualize_heatmap(img, heatmap_o[0:1], 'heatmap_out')
-        visualize_heatmap(img, heatmap_t[0:1], 'heatmap_target')
-        visualize_heatmap(img, paf_o[0:1], 'paf_out')
-        visualize_heatmap(img, paf_t[0:1], 'paf_target')
-        visualize_masks(img, ignore_mask)
+        heatmap_o = outputs[0][i].copy()
+        paf_o = outputs[1][i].copy()
+        heatmap_t = heatmaps_t[i].copy()
+        paf_t = pafs_t[i].copy()
+        ignore_mask_t = ignore_masks_t[i].copy()
+        visualize_output_single(img, heatmap_t, paf_t, ignore_mask_t, heatmap_o, paf_o)
