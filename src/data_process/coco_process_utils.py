@@ -28,6 +28,7 @@ BODY_PARTS = [
 ]
 
 FLIP_INDICES = [(1,2), (3,4), (5,6), (7,8), (9,10), (11,12), (13,14), (15,16)]
+FLIP_INDICES_PAF = [(0,1), (2,3), (4,5), (6,7), (8,9), (10,11), (12,13), (14,15)]
 
 
 def check_annot(annot):
@@ -49,7 +50,7 @@ def get_heatmap(coco, img, keypoints, sigma):
 
 def get_paf(coco, img, keypoints, sigma_paf, variable_width):
     out_pafs = np.zeros((len(BODY_PARTS), 2, img.shape[0], img.shape[1]))
-    n_person_part = np.zeros(len(BODY_PARTS))
+    n_person_part = np.zeros((len(BODY_PARTS),img.shape[0],img.shape[1]))
     for person_id in range(keypoints.shape[0]):
         keypoints_person = keypoints[person_id]
         for i in range(len(BODY_PARTS)):
@@ -75,8 +76,8 @@ def get_paf(coco, img, keypoints, sigma_paf, variable_width):
                     mask = mask1 & mask2 & mask3
                     out_pafs[i, 0] = out_pafs[i, 0] + mask.astype('float32') * v[0]
                     out_pafs[i, 1] = out_pafs[i, 1] + mask.astype('float32') * v[1]
-                    n_person_part[i] += 1
-    n_person_part = n_person_part.reshape(out_pafs.shape[0], 1, 1, 1)
+                    n_person_part[i] += mask.astype('float32')
+    n_person_part = n_person_part.reshape(out_pafs.shape[0], 1, img.shape[0], img.shape[1])
     out_pafs = out_pafs/(n_person_part + 1e-8)
     return out_pafs
 
