@@ -55,17 +55,31 @@ def visualize_keypoints(img, keypoints, body_part_map):
     cv2.imshow('keypoints', img)
     cv2.waitKey()
 
+colors = [
+    [255, 0, 0], [255, 85, 0], [255, 170, 0], [255, 255, 0], [170, 255, 0],
+    [85, 255, 0], [0, 255, 0], [0, 255, 85], [0, 255, 170], [0, 255, 255],
+    [0, 170, 255], [0, 85, 255], [0, 0, 255], [85, 0, 255], [170, 0, 255],
+    [255, 0, 255], [255, 0, 170], [255, 0, 85], [255, 0, 0]]
 
-def visualize_paf(img, pafs):
+
+def visualize_paf(img, pafs,name='pafs'):
     img = img.copy()
-    paf = (pafs[:,0,:,:] > 1e-8).astype('bool') | (pafs[:,0,:,:] < -1e-8).astype('bool')
-    paf = (np.abs(paf).max(axis=0)*255).astype('uint8')
-    #paf = (pafs[:,:,:].sum(axis=0)*255).astype('uint8')
-    colored = cv2.applyColorMap(paf, cv2.COLORMAP_JET)
-    img = cv2.addWeighted(img, 0.6, colored, 0.4, 0)
-    cv2.imshow('pafs', img)
+    for i in range(pafs.shape[0]):
+        paf_x = pafs[i,0,:,:]
+        paf_y = pafs[i,1,:,:]
+        len_paf = np.sqrt(paf_x**2 + paf_y**2)
+        for x in range(0,img.shape[0],8):
+            for y in range(0, img.shape[1], 8):
+                if len_paf[x,y]>0.25:
+                    img = cv2.arrowedLine(img, (y,x), (int(y + 6*paf_x[x,y]), int(x + 6*paf_y[x,y])), colors[i], 1)
+    cv2.imshow(name, img)
     cv2.waitKey()
 
+def reshape_paf(paf):
+    paf = paf.transpose(1,2,0)
+    paf = paf.reshape(paf.shape[0], paf.shape[1], paf.shape[2]//2 , 2)
+    paf = paf.transpose(2, 3, 0, 1)
+    return paf
 
 def visualize_output_single(img, heatmap_t, paf_t, ignore_mask_t, heatmap_o, paf_o):
     img = (denormalize(img) * 255).astype('uint8')
@@ -76,8 +90,8 @@ def visualize_output_single(img, heatmap_t, paf_t, ignore_mask_t, heatmap_o, paf
     ignore_mask = cv2.resize(ignore_mask_t, (img.shape[1], img.shape[0]))
     visualize_heatmap(img, heatmap_o, 'heatmap_out')
     visualize_heatmap(img, heatmap_t, 'heatmap_target')
-    visualize_heatmap(img, paf_o, 'paf_out')
-    visualize_heatmap(img, paf_t, 'paf_target')
+    visualize_paf(img, reshape_paf(paf_o), 'paf_out')
+    visualize_paf(img, reshape_paf(paf_t), 'paf_target')
     visualize_masks(img, ignore_mask)
 
 

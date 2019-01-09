@@ -19,7 +19,7 @@ def create_model(opt):
         backend_feats = 128
     else:
         raise ValueError('Model ' + opt.model + ' not available.')
-    model = PAFModel(backend,backend_feats,n_joints=18,n_paf=32,n_stages=7)
+    model = PAFModel(backend,backend_feats,n_joints=19,n_paf=34,n_stages=7)
     if not opt.loadModel=='none':
         model = torch.load(opt.loadModel)
         print('Loaded model from '+opt.loadModel)

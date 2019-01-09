@@ -26,7 +26,7 @@ colors = [
     [0, 170, 255], [0, 85, 255], [0, 0, 255], [85, 0, 255], [170, 0, 255],
     [255, 0, 255], [255, 0, 170], [255, 0, 85], [255, 0, 0]]
 
-NUM_JOINTS = 17
+NUM_JOINTS = 18
 NUM_LIMBS = len(joint_to_limb_heatmap_relationship)
 
 
@@ -213,7 +213,7 @@ def find_connected_joints(param, paf_upsamp, joint_list_per_joint_type, num_inte
                     intermed_paf = paf_upsamp[limb_intermed_coords[0, :],
                                               limb_intermed_coords[1, :], limb_intermed_coords[2:4, :]].T
 
-                    score_intermed_pts = intermed_paf.dot(limb_dir)/(np.linalg.norm(intermed_paf)+1e-8)
+                    score_intermed_pts = intermed_paf.dot(limb_dir)
                     score_penalizing_long_dist = score_intermed_pts.mean(
                     ) + min(0.5 * paf_upsamp.shape[0] / limb_dist - 1, 0)
                     # Criterion 1: At least 80% of the intermediate points have

@@ -13,18 +13,19 @@ BODY_PARTS = [
     (0,2),   # nose - right eye
     (1,3),   # left eye - left ear
     (2,4),   # right eye - right ear
-    (0,5),   # nose - left shoulder
-    (0,6),   # nose - right shoulder
+    (17,5),  # neck - left shoulder
+    (17,6),  # neck - right shoulder
     (5,7),   # left shoulder - left elbow
     (6,8),   # right shoulder - right elbow
     (7,9),   # left elbow - left hand
     (8,10),  # right elbow - right hand
-    (5,11),  # left shoulder - left waist
-    (6,12),  # right shoulder - right waist
+    (17,11), # neck - left waist
+    (17,12), # neck - right waist
     (11,13), # left waist - left knee
     (12,14), # right waise - right knee
     (13,15), # left knee - left foot
-    (14,16)  # right knee - right foot
+    (14,16), # right knee - right foot
+    (0,17)   # nose - neck
 ]
 
 FLIP_INDICES = [(1,2), (3,4), (5,6), (7,8), (9,10), (11,12), (13,14), (15,16)]
@@ -81,11 +82,30 @@ def get_paf(coco, img, keypoints, sigma_paf, variable_width):
     out_pafs = out_pafs/(n_person_part + 1e-8)
     return out_pafs
 
+
+def add_neck(keypoints):
+    right_shoulder = keypoints[6, :]
+    left_shoulder = keypoints[5, :]
+    neck = np.zeros(3)
+    if right_shoulder[2] > 0 and left_shoulder[2] > 0:
+        neck = (right_shoulder + left_shoulder) / 2
+        neck[2] = 2
+
+    neck = neck.reshape(1, len(neck))
+    neck = np.round(neck)
+    keypoints = np.vstack((keypoints,neck))
+
+    return keypoints
+
+
 def get_keypoints(coco, img, annots):
     keypoints = []
     for annot in annots:
-        keypoints.append(np.array(annot['keypoints']).reshape(-1, 3))
+        person_keypoints = np.array(annot['keypoints']).reshape(-1, 3)
+        person_keypoints = add_neck(person_keypoints)
+        keypoints.append(person_keypoints)
     return np.array(keypoints)
+
 
 def get_ignore_mask(coco, img, annots):
     mask_union = np.zeros((img.shape[0], img.shape[1]), 'bool')

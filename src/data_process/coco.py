@@ -63,7 +63,7 @@ class CocoDataSet(data.Dataset):
         return img
 
     def get_imgs_multiscale(self, index, scales, flip = False):
-        img, heat_map, paf, ignore_mask,_ = self.get_item_raw(index, False)
+        img, heat_map, paf, ignore_mask, keypoints = self.get_item_raw(index, False)
         imgs = []
         for scale in scales:
             width, height = img.shape[1], img.shape[0]
@@ -77,7 +77,7 @@ class CocoDataSet(data.Dataset):
         paf = paf.transpose(2, 3, 0, 1)
         paf = paf.reshape(paf.shape[0], paf.shape[1], paf.shape[2] * paf.shape[3])
         paf = paf.transpose(2, 0, 1)
-        return imgs, heat_map, paf, ignore_mask
+        return imgs, heat_map, paf, ignore_mask, keypoints
 
     def __len__(self):
         return len(self.indices)

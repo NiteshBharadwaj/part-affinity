@@ -19,7 +19,7 @@ class Opts:
         self.parser.add_argument('-hmSize', default=46, type=int, help='Number of threads')
         self.parser.add_argument('-DEBUG', type=int, default=0, help='Debug')
         self.parser.add_argument('-sigmaPAF', default=5, type=int, help='Width of PAF')
-        self.parser.add_argument('-sigmaHM', default=7, type=int, help='Std. of Heatmap')
+        self.parser.add_argument('-sigmaHM', default=1, type=int, help='Std. of Heatmap')
         self.parser.add_argument('-variableWidthPAF', dest='variableWidthPAF', action='store_true', help='Variable width PAF based on length of part')
         self.parser.add_argument('-dataset', default='coco', help='Dataset')
         self.parser.add_argument('-model', default='vgg', help='Model')
