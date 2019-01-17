@@ -47,7 +47,7 @@ def eval_net(data_loader, model, opts):
             #visualize_output_single(img_basic, heatmap_t, paf_t, ignore_mask_t, heatmap_avg, paf_avg)
             img_basic = denormalize(img_basic)
             param = {'thre1': 0.1, 'thre2': 0.05, 'thre3': 0.5}
-            canvas, to_plot, candidate, subset = decode_pose(img_basic, param, heatmap_t, paf_t)
+            canvas, to_plot, candidate, subset = decode_pose(img_basic, param, heatmap_avg, paf_avg)
             keypoints_list.append(keypoints)
             append_result(dataset.indices[i], subset, candidate, outputs)
             vis_path = os.path.join(opts.saveDir, 'viz')
