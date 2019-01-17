@@ -13,11 +13,11 @@ from .post import decode_pose, append_result
 def eval_net(data_loader, model, opts):
     model.eval()
     dataset = data_loader.dataset
-    scales = [1., 0.5, 0.75, 1.25, 1.5]
+    scales = [1., 0.5, 0.75, 1.25, 1.5, 2.0]
     assert (scales[0]==1)
     n_scales = len(scales)
     outputs = []
-    dataset_len = 2
+    dataset_len = 100 #len(dataset)
     keypoints_list = []
     with torch.no_grad():
         for i in range(dataset_len):
