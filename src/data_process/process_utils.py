@@ -162,9 +162,9 @@ def affine_augment(img, ignore_mask, keypoints, rot_angle, scale_aug_factor):
     bot_lim = keypoints_useful[:,:,1].max() + 32
     c_y = img.shape[0]/2
     c_x = img.shape[1]/2
-    scale_min = max(max(right_lim-c_x, c_x-left_lim)/c_x, max(c_y - top_lim, bot_lim - c_y)/c_y, 1 - scale_aug_factor)
-    scale_max = min(2 - scale_min, 1 + scale_aug_factor)
-    scale = (1 + np.clip(np.random.randn(), -1, 1))*(scale_max - scale_min)*0.5 + scale_min
+    scale_min = 0.5
+    scale_max = 1.3
+    scale = np.random.random()*(scale_max - scale_min) + scale_min
     trans = gen_trans_from_patch_cv(c_x, c_y, img.shape[1], img.shape[0], img.shape[1], img.shape[0], scale, rot_angle)
     img = cv2.warpAffine(img, trans, (img.shape[1], img.shape[0]), flags=cv2.INTER_LINEAR)
     ignore_mask = cv2.warpAffine(ignore_mask, trans, (img.shape[1], img.shape[0]), flags=cv2.INTER_LINEAR)

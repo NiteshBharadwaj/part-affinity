@@ -47,7 +47,7 @@ class CocoDataSet(data.Dataset):
         img, ignore_mask, keypoints = color_augment(img, ignore_mask, keypoints, opts.colorAugFactor)
         rot_angle = 0
         if np.random.random() < opts.rotAugProb:
-            rot_angle = np.clip(np.random.randn(),-2.0,2.0) * opts.rotAugFactor
+            rot_angle = 4*(np.random.random()-0.5) * opts.rotAugFactor
         img, ignore_mask, keypoints = affine_augment(img, ignore_mask, keypoints, rot_angle, opts.scaleAugFactor)
         return img, ignore_mask, keypoints
 

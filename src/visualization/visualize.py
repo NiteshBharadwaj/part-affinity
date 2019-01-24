@@ -25,8 +25,9 @@ def visualize_masks(img, ignore_mask):
 
 
 def visualize_heatmap(img, heat_maps, displayname = 'heatmaps'):
+    heat_maps = resize_hm(heat_maps,(img.shape[1], img.shape[0]))
     heat_maps = heat_maps.max(axis=0)
-    heat_maps = (heat_maps/heat_maps.max() * 255.).astype('uint8')
+    heat_maps = (heat_maps * 255.).astype('uint8')
     img = img.copy()
     colored = cv2.applyColorMap(heat_maps, cv2.COLORMAP_JET)
     img = cv2.addWeighted(img, 0.6, colored, 0.4, 0)

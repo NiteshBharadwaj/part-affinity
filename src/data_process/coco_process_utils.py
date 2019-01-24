@@ -38,14 +38,32 @@ def check_annot(annot):
 
 def get_heatmap(coco, img, keypoints, sigma):
     n_joints = keypoints.shape[1]
-    out_map = np.zeros((n_joints + 1, img.shape[0], img.shape[1]))
+    stride = 8
+    out_map = np.zeros((n_joints + 1, img.shape[0]//stride, img.shape[1]//stride))
     for person_id in range(keypoints.shape[0]):
         keypoints_person = keypoints[person_id]
         for i in range(keypoints.shape[1]):
             keypoint = keypoints_person[i]
             # Ignore unannotated keypoints
             if keypoint[2] > 0:
-                out_map[i] = np.maximum(out_map[i], DrawGaussian(out_map[i], keypoint[0:2], sigma=sigma))
+                crop_size_y = img.shape[0]
+                crop_size_x = img.shape[1]
+                center = (keypoint[0], keypoint[1])
+                grid_y = crop_size_y / stride
+                grid_x = crop_size_x / stride
+                start = stride / 2.0 - 0.5
+                y_range = [i for i in range(int(grid_y))]
+                x_range = [i for i in range(int(grid_x))]
+                xx, yy = np.meshgrid(x_range, y_range)
+                xx = xx * stride + start
+                yy = yy * stride + start
+                d2 = (xx - center[0]) ** 2 + (yy - center[1]) ** 2
+                exponent = d2 / 2.0 / sigma / sigma
+                mask = exponent <= 4.6052
+                cofid_map = np.exp(-exponent)
+                cofid_map = np.multiply(mask, cofid_map)
+                cofid_map[cofid_map > 1.0] = 1.0
+                out_map[i] = np.maximum(out_map[i], cofid_map)
     out_map[n_joints] = 1 - np.sum(out_map[0:n_joints], axis=0) # Last heatmap is background
     return out_map
 
