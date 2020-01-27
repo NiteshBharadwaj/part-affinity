@@ -3,6 +3,8 @@
 Pure python and pytorch implementation of [
 Realtime Multi-Person 2D Pose Estimation using Part Affinity Fields](https://arxiv.org/abs/1611.08050). Original caffe implementation is [here](https://github.com/ZheC/Realtime_Multi-Person_Pose_Estimation) 
 
+NOTE: The codebase is no longer maintained. 
+
 ## COCO Multi-person Dataset and Dataloader Setup:
 Download  train2017.zip, val2017.zip and annotations_trainval2017.zip from [COCO Project](https://github.com/cocodataset/cocodataset.github.io/blob/master/dataset/download.htm) The keypoints description can be found [here](http://cocodataset.org/#format-data). Extract the folders and place them in '/data'. Pre-processing of the dataset is done on the fly. To visualize the data loader use:
  
